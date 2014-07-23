@@ -1,34 +1,35 @@
 #include<stdio.h>
 #include<ctype.h>
 #include<stdlib.h>
-#include<math.h>
-#include<string.h>
 
 #define MAXOP 100
 #define NUMBER '0'
-#define MATH 'n'
 #define MAXVAL 100
 #define BUFSIZE 100
+#define MAXLINE 100
 
 int sp = 0;
 double val[MAXVAL];
 char buf[BUFSIZE];
-int bufp = 0;
+int bufp = 0, li ;
+int line[MAXLINE];
 
 int getop(char []);
 void push(double);
 double pop(void);
 int getch(void);
 void ungetch(int);
-void mathfnc(char s[]);
+int get_line(int [], int);
 
 /* reverse polish calculator */
 main()
 {
-	int type;
+	int type, l;
 	double op2;
 	char s[MAXOP];
 
+	while (get_line(line, MAXLINE) != 0) {
+		li = 0;
 	while ( (type = getop(s)) != EOF) {
 		switch (type) {
 			case NUMBER:
@@ -61,28 +62,10 @@ main()
 			case '\n':
 				printf("\t%.8g\n", pop());
 				break;
-			case MATH:
-				mathfnc(s);
-				break;
 		}
 	}
+	}
 	return 0;
-}
-void mathfnc(char s[])
-{
-	double op2;
-
-	if (strcmp(s,"sin") == 0)
-		push(sin(pop()));
-	else if (strcmp(s,"cos") == 0)
-		push(cos(pop()));
-	else if (strcmp(s,"exp") == 0)
-		push(exp(pop()));
-	else if (strcmp(s,"pow") == 0) {
-		op2 = pop();
-		push(pow(pop(),op2));
-	} else 
-		printf("Invalid code:\n");
 }
 /*push : push f onto value stack */
 void push(double f)
@@ -107,45 +90,58 @@ int getop(char s[])
 {
 	int i, c;
 
-	while ( (s[0] = c = getch() ) == ' ' || c == '\t')					;
+	if (line[li] == '\0')
+	       if (get_line(line,MAXLINE) == 0)
+			return EOF;
+	else
+		li = 0;
+		
+	while ( (s[0] = c = line[li++]) == ' ' || c == '\t')
+		;
+
 	s[1] = '\0';
 	
-	i = 0; /* changed from here *|* */
-	
-	if (islower(c))
-		while (islower(s[++i] = c = getch()))
-			;
-		s[i] = '\0';
-		if (c != EOF)
-			ungetch(c);
-		if (strlen(s) > 1)
-			return MATH;
-		else 
-			return c;
+/*	i = 0;*/
 
-	if (!isdigit(c) && c != '.' && c != '-')    
+	if (!isdigit(c) && c != '.')    
 		return c; /* not a number */
-	if (c == '-')                                        /* section to check negative values */
-		if (isdigit(c = getch()) || c == '.')        /* if a negative symbol detects */
-			s[++i] = c; /* negative number*/     /* check whether next character is a number or a  '.' if so */
-		else { 					     /* that is negative number & that will be stored in the array to be returned*/
-			if (c != EOF)			     /* else return a negative operator to compute */ 
+/*	if (c == '-')                                   | 4 |     section to check negative values 
+		if (isdigit(c = getch()) || c == '.')   | - |    if a negative symbol detects 
+			s[++i] = c;  negative number 	| 3 |    check whether next character is a number or a  '.' if so 
+		else { 					|   |  that is negative number & that will be stored in the array to be returned
+			if (c != EOF)			|   |  else return a negative operator to compute 
 				ungetch(c);
 			return '-';
-		} 
+		} */
 	
+	i = 0;
+
 	if (isdigit(c)) /* collect integer parts */
-		while (isdigit(s[++i] = c = getchar()))
+		while (isdigit(s[++i] = c = line[li++]))
 			;
 	if (c == '.')
-		while (isdigit(s[++i] = c = getchar()));
+		while (isdigit(s[++i] = c = line[li++]));
 			;
 	s[i] = '\0';
-	if (c != EOF)
-		ungetch(c);
+	if (line[li] == '\0') 
+		li--;
 	return NUMBER;
 }
-int getch(void)
+int get_line(int line[], int MAX)
+{
+	int c, i = 0, j = 0;
+
+	while ( --MAX > 0 &&( (c = getchar()) != EOF) )
+		line[i++] = c;
+
+	if (c == '\n')
+		line[i] = c;
+
+	line[i] = '\0';
+	return i;
+}
+
+/*int getch(void)
 {
 	return (bufp > 0) ? buf[--bufp] : getchar();
 }
@@ -156,4 +152,4 @@ void ungetch(int c)
 		printf("ungetch: too many characters\n");
 	else 
 		buf[bufp++] = c;
-}
+}*/

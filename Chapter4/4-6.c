@@ -1,12 +1,9 @@
 #include<stdio.h>
 #include<ctype.h>
 #include<stdlib.h>
-#include<math.h>
-#include<string.h>
 
 #define MAXOP 100
 #define NUMBER '0'
-#define MATH 'n'
 #define MAXVAL 100
 #define BUFSIZE 100
 
@@ -20,15 +17,19 @@ void push(double);
 double pop(void);
 int getch(void);
 void ungetch(int);
-void mathfnc(char s[]);
+void clear(void);
 
 /* reverse polish calculator */
 main()
 {
 	int type;
-	double op2;
+	double op2, r, op1;
 	char s[MAXOP];
 
+	printf("\n");
+	printf("Modified RPN Calculator\n");
+	printf("Enter following keys to perform particular options : \n");
+	printf("C : to clear the stack, S:to swap to elements, D : to duplicate an element, ENTER : to print the top element\n");
 	while ( (type = getop(s)) != EOF) {
 		switch (type) {
 			case NUMBER:
@@ -58,31 +59,35 @@ main()
 				else
 					printf("error\n");
 				break;
-			case '\n':
-				printf("\t%.8g\n", pop());
+			case '\n':					
+				/*printf("\t%.8g\n", pop());*/
+				pop();
 				break;
-			case MATH:
-				mathfnc(s);
+			case 'C' :					/* option to clear the stack */
+				clear();
+				break;
+			case 'S' :					/* option to swap top 2 elements */
+				op1 = pop();
+				op2 = pop();
+				push(op1);
+				push(op2);
+				break;
+			case 'D' :					/* option to duplicate stack element */
+				op1 = pop();
+				push(op1);
+				push(op1);
+				break;
+			case '?' : 
+				op1 = pop();
+				printf("top element : %.8g\n", op1);
 				break;
 		}
 	}
 	return 0;
 }
-void mathfnc(char s[])
+void clear(void)		/* function th clear the stack */
 {
-	double op2;
-
-	if (strcmp(s,"sin") == 0)
-		push(sin(pop()));
-	else if (strcmp(s,"cos") == 0)
-		push(cos(pop()));
-	else if (strcmp(s,"exp") == 0)
-		push(exp(pop()));
-	else if (strcmp(s,"pow") == 0) {
-		op2 = pop();
-		push(pow(pop(),op2));
-	} else 
-		printf("Invalid code:\n");
+	sp = 0;
 }
 /*push : push f onto value stack */
 void push(double f)
@@ -106,22 +111,12 @@ double pop(void)
 int getop(char s[])
 {
 	int i, c;
+	double r;
 
 	while ( (s[0] = c = getch() ) == ' ' || c == '\t')					;
 	s[1] = '\0';
 	
-	i = 0; /* changed from here *|* */
-	
-	if (islower(c))
-		while (islower(s[++i] = c = getch()))
-			;
-		s[i] = '\0';
-		if (c != EOF)
-			ungetch(c);
-		if (strlen(s) > 1)
-			return MATH;
-		else 
-			return c;
+	i = 0;
 
 	if (!isdigit(c) && c != '.' && c != '-')    
 		return c; /* not a number */
@@ -144,6 +139,12 @@ int getop(char s[])
 	if (c != EOF)
 		ungetch(c);
 	return NUMBER;
+
+/*	if (c == '\n') {
+		i = 1;
+		r = val[--sp];
+		printf("\t%.8g", r);
+	} */
 }
 int getch(void)
 {
