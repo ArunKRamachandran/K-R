@@ -1,0 +1,8 @@
+
+
+--------------------------
+use commmand 
+	'echo $?' to check what value is returned from a function.
+	always use return0 to indicate that particular function succesfully 
+	terminated.
+--------------------------
