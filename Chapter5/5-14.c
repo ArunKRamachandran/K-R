@@ -110,8 +110,8 @@ int readline(char *lineptr[], int maxlines)
 			return -1;
 		else {
 */			line[len - 1] = '\0';
-			//strcpy(p, line);
-			p = line;
+			strcpy(p, line);
+			//p = line;
 			//printf("%s\n", p);
 			lineptr[nlines] = p;
 			printf("stored valu :%s\n", lineptr[nlines]);
@@ -130,6 +130,6 @@ void writeline(char *lineptr[], int nlines)
 	
 	for (i = 0; i < nlines; i++) {
 		printf("Printing line..\n");
-		printf("%s\n", (char)lineptr);
+		printf("%s\n", *lineptr++);
 	}
 }
